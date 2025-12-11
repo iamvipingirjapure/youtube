@@ -2,12 +2,17 @@ import { categories } from "../../data/mockData";
 import { searchVideos } from "../../redux/searchSlice";
 import { useDispatch } from "react-redux";
 import { type AppDispatch } from "../../redux/store";
+import { useEffect } from "react";
 
 export const CategoryPills = () => {
     const dispatch = useDispatch<AppDispatch>();
     const handleCategoryClick = (category: string) => {
         dispatch(searchVideos(category));
     }
+
+    useEffect(()=>{
+          dispatch(searchVideos('all'))
+    },[])
     return (
         <div className="flex overflow-x-auto gap-3 scrollbar-hide w-full mask-linear">
             <style>{`
