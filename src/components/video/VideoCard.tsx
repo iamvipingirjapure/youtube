@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import type { SearchResultItem } from "../../redux/searchSlice";
 
 export interface VideoProps {
@@ -10,45 +10,35 @@ export interface VideoProps {
     views: string;
     postedAt: string;
     duration: string;
+    channelId: string;
+    channelTitle: string;
+    description: string;
+    liveBroadcastContent: string;
+    publishTime: string;
+    publishedAt: string;
 }
 
 interface VideoCardProps {
-    video: VideoProps | SearchResultItem;
+    video: VideoProps | SearchResultItem | any;
     variant?: 'vertical' | 'compact';
 }
 
 export const VideoCard = ({ video, variant = 'vertical' }: VideoCardProps) => {
+    const navigate = useNavigate();
     const isCompact = variant === 'compact';
 
     let id, title, thumbnail, channelName, channelAvatar, views, postedAt, duration;
 
-    if ('snippet' in video) {
-        const snippet = video.snippet;
-        id = video.id.videoId;
-        title = snippet.title;
-        thumbnail = snippet.thumbnails.medium.url; 
-        channelName = snippet.channelTitle;
-        channelAvatar = ""; 
-        views = "1M views";
-        postedAt = new Date(snippet.publishedAt).toLocaleDateString(); 
-        duration = "";
-    } else {
-        id = video.id;
-        title = video.title;
-        thumbnail = video.thumbnail;
-        channelName = video.channelName;
-        channelAvatar = video.channelAvatar;
-        views = video.views;
-        postedAt = video.postedAt;
-        duration = video.duration;
-    }
-
     return (
-        <Link to={`/watch/${id}`} className={`flex ${isCompact ? 'gap-2' : 'flex-col gap-2'} cursor-pointer group`}>
+        <div
+            onClick={() => {
+                video.id.videoId
+                    && navigate(`/watch/${video.id.videoId}`, { state: video });
+            }} className={`flex ${isCompact ? 'gap-2' : 'flex-col gap-2'} cursor-pointer group`}>
             <div className={`relative rounded-xl overflow-hidden ${isCompact ? 'w-40 min-w-[168px] aspect-video flex-shrink-0' : 'aspect-video w-full'}`}>
                 <img
-                    src={thumbnail}
-                    alt={title}
+                    src={video?.snippet?.thumbnails?.medium?.url ?? 'https://imgs.search.brave.com/6khSh_NPDLOjDucvUStVVnHKqLiPNhgzIqmF03m1t5Q/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9kMnVv/bGd1eHI1NnM0ZS5j/bG91ZGZyb250Lm5l/dC9pbWcva2FydHJh/cGFnZXMvdmlkZW9f/cGxheWVyX3BsYWNl/aG9sZGVyLmdpZg.gif'}
+                    alt={title ?? 'title'}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                 />
                 {duration && (
@@ -69,26 +59,26 @@ export const VideoCard = ({ video, variant = 'vertical' }: VideoCardProps) => {
                             />
                         ) : (
                             <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-500">
-                                {channelName.charAt(0)}
+                                {video?.snippet?.channelTitle.charAt(0)}
                             </div>
                         )}
                     </div>
                 )}
 
                 <div className="flex flex-col">
-                    <h3 className={`text-sm font-bold text-yt-text line-clamp-2 leading-tight group-hover:text-black ${isCompact ? 'mb-1' : ''}`} dangerouslySetInnerHTML={{ __html: title }}>
+                    <h3 className={`text-sm font-bold text-yt-text line-clamp-2 leading-tight group-hover:text-black ${isCompact ? 'mb-1' : ''}`} dangerouslySetInnerHTML={{ __html: video?.snippet?.title }}>
                     </h3>
                     <div className="text-xs text-gray-600">
-                        <div className="hover:text-gray-900">{channelName}</div>
+                        <div className="hover:text-gray-900">{video?.snippet?.channelTitle}</div>
                         <div className="flex items-center">
-                            <span>{views}</span>
-                            {!isCompact && <span className="mx-1">•</span>}
-                            {isCompact && <span className="mx-1">•</span>}
+                            <span>{video?.snippet?.viewCount}</span>
+                            {video?.snippet?.viewCount && !isCompact && <span className="mx-1">•</span>}
+                            {video?.snippet?.viewCount && isCompact && <span className="mx-1">•</span>}
                             <span>{postedAt}</span>
                         </div>
                     </div>
                 </div>
             </div>
-        </Link>
+        </div >
     );
 };

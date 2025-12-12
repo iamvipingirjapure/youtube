@@ -2,17 +2,19 @@ import { categories } from "../../data/mockData";
 import { searchVideos } from "../../redux/searchSlice";
 import { useDispatch } from "react-redux";
 import { type AppDispatch } from "../../redux/store";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export const CategoryPills = () => {
+    const [activeCategory, setActiveCategory] = useState<string>(categories[0]);
     const dispatch = useDispatch<AppDispatch>();
     const handleCategoryClick = (category: string) => {
+        setActiveCategory(category);
         dispatch(searchVideos(category));
     }
 
-    useEffect(()=>{
-          dispatch(searchVideos('all'))
-    },[])
+    useEffect(() => {
+        dispatch(searchVideos(activeCategory))
+    }, [])
     return (
         <div className="flex overflow-x-auto gap-3 scrollbar-hide w-full mask-linear">
             <style>{`
@@ -24,14 +26,11 @@ export const CategoryPills = () => {
             scrollbar-width: none;
         }
       `}</style>
-            <button className="bg-black text-white px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0">
-                All
-            </button>
-            {categories.slice(1).map((category) => (
+            {categories.map((category) => (
                 <button
                     key={category}
                     onClick={() => handleCategoryClick(category)}
-                    className="bg-gray-100/80 hover:bg-gray-200 px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0"
+                    className={`${category === activeCategory ? 'bg-black text-white' : 'bg-gray-100/80 hover:bg-gray-200'} px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0`}
                 >
                     {category}
                 </button>

@@ -15,7 +15,6 @@ export default function YouTubePlayer({ videoId }: YouTubePlayerProps) {
     const playerRef = useRef<any>(null);
 
     useEffect(() => {
-        // Check if script is already loaded
         if (!document.querySelector('script[src="https://www.youtube.com/iframe_api"]')) {
             const tag = document.createElement("script");
             tag.src = "https://www.youtube.com/iframe_api";
