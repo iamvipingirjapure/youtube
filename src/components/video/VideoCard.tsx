@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import type { SearchResultItem } from "../../redux/searchSlice";
 
 export interface VideoProps {
@@ -27,7 +27,7 @@ export const VideoCard = ({ video, variant = 'vertical' }: VideoCardProps) => {
     const navigate = useNavigate();
     const isCompact = variant === 'compact';
 
-    let id, title, thumbnail, channelName, channelAvatar, views, postedAt, duration;
+    let title, channelName, channelAvatar, postedAt, duration;
 
     return (
         <div

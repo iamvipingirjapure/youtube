@@ -5,7 +5,6 @@ import {
     updateComment,
     postReply,
     type YouTubeCommentThread,
-    type YouTubeComment,
     type CommentThreadsResponse,
 } from '../services/youtubeApi';
 
