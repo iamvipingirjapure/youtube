@@ -2,31 +2,31 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { VideoCard } from "../components/video/VideoCard";
 import { CategoryPills } from "../components/ui/CategoryPills";
-import { searchVideos } from "../redux/searchSlice";
+import { fetchTrendingVideos } from "../redux/searchSlice";
 import { type AppDispatch, type RootState } from "../redux/store";
 import { AlertCircle, RefreshCw, X } from "lucide-react";
 import { videos as mockVideos } from "../data/mockData";
 
 export const Home = () => {
     const dispatch = useDispatch<AppDispatch>();
-    const { results, loading, error } = useSelector(
+    const { loading, error, videos } = useSelector(
         (state: RootState) => state.search
     );
     const [showBanner, setShowBanner] = useState(true);
 
     useEffect(() => {
-        dispatch(searchVideos("trending"));
-    }, [dispatch]);
+        dispatch(fetchTrendingVideos());
+    }, []);
 
     const handleRetry = () => {
-        dispatch(searchVideos("trending"));
+        dispatch(fetchTrendingVideos());
         setShowBanner(true);
     };
 
-    const videosToShow = error || results.length === 0 ? mockVideos : results;
-    const isShowingMockData = error || results.length === 0;
+    const videosToShow = error || videos?.length === 0 ? mockVideos : videos;
+    const isShowingMockData = error || videos?.length === 0;
 
-    if (loading && results.length === 0) {
+    if (loading && videos?.length === 0) {
         return (
             <div className="p-4 lg:p-6">
                 <CategoryPills />
@@ -83,9 +83,8 @@ export const Home = () => {
                 </div>
             )}
 
-            {/* Video grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-6">
-                {videosToShow.map((video: any) => (
+                {videosToShow?.map((video: any) => (
                     <VideoCard key={video.id?.videoId || video.id} video={video} />
                 ))}
             </div>

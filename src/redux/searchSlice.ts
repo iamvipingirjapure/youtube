@@ -135,6 +135,7 @@ export interface SearchState {
     comments: CommentThread[];
     commentsLoading: boolean;
     totalComments: number;
+    videos?: VideoDetails[];
 }
 
 const initialState: SearchState = {
@@ -147,6 +148,7 @@ const initialState: SearchState = {
     comments: [],
     commentsLoading: false,
     totalComments: 0,
+    videos: [],
 };
 
 export const searchVideos = createAsyncThunk(
@@ -200,6 +202,38 @@ export const fetchVideoById = createAsyncThunk(
             return data.items[0];
         } catch (error) {
             return rejectWithValue('Failed to fetch video details');
+        }
+    }
+);
+
+
+export const fetchTrendingVideos = createAsyncThunk(
+    "videos/fetchTrendingVideos",
+    async (_, { rejectWithValue }) => {
+        try {
+            const API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY;
+
+            if (!API_KEY) {
+                return rejectWithValue("API Key missing");
+            }
+
+            const response = await fetch(
+                `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&chart=mostPopular&regionCode=IN&maxResults=4&key=${API_KEY}`
+            );
+
+            if (!response.ok) {
+                throw new Error("Network response was not ok");
+            }
+
+            const data = await response.json();
+
+            if (!data.items || data.items.length === 0) {
+                return rejectWithValue("No trending videos found");
+            }
+
+            return data.items;
+        } catch (error) {
+            return rejectWithValue("Failed to fetch trending videos");
         }
     }
 );
@@ -285,7 +319,20 @@ const searchSlice = createSlice({
             .addCase(fetchCommentThreads.rejected, (state, action) => {
                 state.commentsLoading = false;
                 state.error = action.payload as string;
+            })
+            .addCase(fetchTrendingVideos.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchTrendingVideos.fulfilled, (state, action) => {
+                state.loading = false;
+                state.videos = action.payload;
+            })
+            .addCase(fetchTrendingVideos.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
             });
+
     },
 });
 
