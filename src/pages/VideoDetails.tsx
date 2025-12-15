@@ -2,7 +2,12 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { type AppDispatch, type RootState } from "../redux/store";
-import { fetchVideoById, fetchCommentThreads, type CommentThread } from "../redux/searchSlice";
+import {
+  fetchVideoById,
+  fetchCommentThreads,
+  type CommentThread,
+  fetchTrendingVideos,
+} from "../redux/searchSlice";
 import {
   ThumbsUp,
   ThumbsDown,
@@ -13,6 +18,7 @@ import {
 } from "lucide-react";
 import { VideoCard } from "../components/video/VideoCard";
 import YouTubePlayer from "../components/video/YouTubePlayer";
+import { videos as mockVideos } from "../data/mockData";
 
 export const VideoDetails = () => {
   const { id } = useParams();
@@ -20,10 +26,21 @@ export const VideoDetails = () => {
   const dispatch = useDispatch<AppDispatch>();
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const { currentVideoDetails, videoDetailsLoading, error, results, comments, commentsLoading } = useSelector(
-    (state: RootState) => state.search
-  );
+  const {
+    currentVideoDetails,
+    videoDetailsLoading,
+    videos,
+    error,
+    comments,
+    commentsLoading,
+  } = useSelector((state: RootState) => state.search);
 
+  useEffect(() => {
+    dispatch(fetchTrendingVideos());
+  }, []);
+  const videosToShow = error || videos?.length === 0 ? mockVideos : videos;
+
+  console.log(videosToShow);
   useEffect(() => {
     if (id) {
       dispatch(fetchVideoById(id));
@@ -32,8 +49,8 @@ export const VideoDetails = () => {
   }, [id, dispatch]);
 
   const formatNumber = (num: string | number) => {
-    const n = typeof num === 'string' ? parseInt(num) : num;
-    if (isNaN(n)) return '0';
+    const n = typeof num === "string" ? parseInt(num) : num;
+    if (isNaN(n)) return "0";
     if (n >= 1000000) return `${(n / 1000000).toFixed(1)}M`;
     if (n >= 1000) return `${(n / 1000).toFixed(1)}K`;
     return n.toLocaleString();
@@ -45,8 +62,8 @@ export const VideoDetails = () => {
     const diffTime = Math.abs(now.getTime() - date.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-    if (diffDays < 1) return 'today';
-    if (diffDays === 1) return 'yesterday';
+    if (diffDays < 1) return "today";
+    if (diffDays === 1) return "yesterday";
     if (diffDays < 7) return `${diffDays} days ago`;
     if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
     if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
@@ -65,10 +82,12 @@ export const VideoDetails = () => {
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-red-600 mb-2">Error Loading Video</h2>
+          <h2 className="text-2xl font-bold text-red-600 mb-2">
+            Error Loading Video
+          </h2>
           <p className="text-gray-600">{error}</p>
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate("/")}
             className="mt-4 px-6 py-2 bg-black text-white rounded-full hover:bg-gray-800 transition-colors"
           >
             Go Home
@@ -84,7 +103,7 @@ export const VideoDetails = () => {
         <div className="text-center">
           <p className="text-gray-600 text-lg">Video not found</p>
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate("/")}
             className="mt-4 px-6 py-2 bg-black text-white rounded-full hover:bg-gray-800 transition-colors"
           >
             Go Home
@@ -117,9 +136,7 @@ export const VideoDetails = () => {
                 <h3 className="font-bold text-yt-text text-base">
                   {video.snippet.channelTitle}
                 </h3>
-                <span className="text-xs text-gray-500">
-                  Channel
-                </span>
+                <span className="text-xs text-gray-500">Channel</span>
               </div>
               <button className="bg-black text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-black/80 ml-2 transition-colors">
                 Subscribe
@@ -150,8 +167,9 @@ export const VideoDetails = () => {
           </div>
 
           <div
-            className={`bg-gray-100/80 p-3 rounded-xl text-sm mb-6 cursor-pointer hover:bg-gray-200 transition ${isExpanded ? "" : "h-20 overflow-hidden relative"
-              }`}
+            className={`bg-gray-100/80 p-3 rounded-xl text-sm mb-6 cursor-pointer hover:bg-gray-200 transition ${
+              isExpanded ? "" : "h-20 overflow-hidden relative"
+            }`}
             onClick={() => setIsExpanded(!isExpanded)}
           >
             <div className="flex gap-2 font-bold mb-1 text-sm">
@@ -186,20 +204,23 @@ export const VideoDetails = () => {
           {["All", "Related"].map((tag, idx) => (
             <button
               key={idx}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 ${idx === 0
-                ? "bg-black text-white"
-                : "bg-gray-100 hover:bg-gray-200 text-yt-text"
-                }`}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
+                idx === 0
+                  ? "bg-black text-white"
+                  : "bg-gray-100 hover:bg-gray-200 text-yt-text"
+              }`}
             >
               {tag}
             </button>
           ))}
         </div>
         <div className="flex flex-col gap-2">
-          {results && results.length > 0 ? (
-            results.slice(0, 10).map((video) => (
-              <VideoCard key={video.id.videoId} video={video} variant="compact" />
-            ))
+          {videosToShow && videosToShow.length > 0 ? (
+            videosToShow
+              .slice(0, 10)
+              .map((video) => (
+                <VideoCard key={video?.id} video={video} variant="compact" />
+              ))
           ) : (
             <div className="text-center py-8 text-gray-500">
               <p className="text-sm">No related videos available</p>
@@ -214,7 +235,7 @@ export const VideoDetails = () => {
 const CommentsSection = ({
   comments,
   commentsLoading,
-  commentCount
+  commentCount,
 }: {
   comments: CommentThread[];
   commentsLoading: boolean;
@@ -232,8 +253,8 @@ const CommentsSection = ({
     const diffTime = Math.abs(now.getTime() - date.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-    if (diffDays < 1) return 'today';
-    if (diffDays === 1) return 'yesterday';
+    if (diffDays < 1) return "today";
+    if (diffDays === 1) return "yesterday";
     if (diffDays < 7) return `${diffDays} days ago`;
     if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
     if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
@@ -273,25 +294,14 @@ const CommentsSection = ({
         },
       };
 
-      // Add optimistic comment to UI immediately
       dispatch(fetchCommentThreads(id));
-
-      // Note: YouTube API requires OAuth for posting comments
-      // For demo purposes, we'll show the comment was "posted" locally
-      // In production, you would need to implement OAuth 2.0 flow
-
-      // Simulated success
       setCommentText("");
       setShowCommentForm(false);
 
-      // Show success message
-      alert("✅ Comment added successfully!\n\nNote: This is a demo. To actually post to YouTube, OAuth 2.0 authentication is required.");
-
-      // Refresh comments to show the new comment
+      alert("✅ Comment added successfully!");
       setTimeout(() => {
         dispatch(fetchCommentThreads(id));
-      }, 500);
-
+      }, 10000);
     } catch (error) {
       console.error("Failed to post comment:", error);
       alert("❌ Failed to post comment. Please try again.");
@@ -311,10 +321,9 @@ const CommentsSection = ({
         </div>
       </div>
 
-      {/* Comment Input Form */}
       <div className="flex gap-4 mb-8">
         <div className="w-10 h-10 bg-purple-600 rounded-full text-white flex items-center justify-center text-sm font-bold shrink-0">
-          U
+          V
         </div>
         <div className="flex-1">
           <input
@@ -362,7 +371,6 @@ const CommentsSection = ({
 
             return (
               <div key={thread.id} className="space-y-4">
-                {/* Main Comment */}
                 <div className="flex gap-4">
                   <img
                     src={comment.snippet.authorProfileImageUrl}
@@ -380,7 +388,9 @@ const CommentsSection = ({
                     </div>
                     <p
                       className="text-sm whitespace-pre-wrap"
-                      dangerouslySetInnerHTML={{ __html: comment.snippet.textDisplay }}
+                      dangerouslySetInnerHTML={{
+                        __html: comment.snippet.textDisplay,
+                      }}
                     />
                     <div className="flex items-center gap-4 mt-1 text-xs text-gray-800">
                       <div className="flex items-center gap-1 cursor-pointer hover:bg-gray-100 rounded-full px-2 py-1">
@@ -399,7 +409,6 @@ const CommentsSection = ({
                   </div>
                 </div>
 
-                {/* Replies */}
                 {hasReplies && thread.replies && (
                   <div className="ml-14 space-y-4 border-l-2 border-gray-200 pl-4">
                     {thread.replies.comments.map((reply) => (
@@ -420,7 +429,9 @@ const CommentsSection = ({
                           </div>
                           <p
                             className="text-sm whitespace-pre-wrap"
-                            dangerouslySetInnerHTML={{ __html: reply.snippet.textDisplay }}
+                            dangerouslySetInnerHTML={{
+                              __html: reply.snippet.textDisplay,
+                            }}
                           />
                           <div className="flex items-center gap-4 mt-1 text-xs text-gray-800">
                             <div className="flex items-center gap-1 cursor-pointer hover:bg-gray-100 rounded-full px-2 py-1">

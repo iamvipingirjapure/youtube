@@ -28,12 +28,12 @@ export const VideoCard = ({ video, variant = 'vertical' }: VideoCardProps) => {
     const isCompact = variant === 'compact';
 
     let title, channelName, channelAvatar, postedAt, duration;
-
+    console.log(video)
     return (
         <div
             onClick={() => {
-                video.id.videoId
-                    && navigate(`/watch/${video.id.videoId}`, { state: video });
+                video.id
+                    && navigate(`/watch/${video.id}`, { state: video });
             }} className={`flex ${isCompact ? 'gap-2' : 'flex-col gap-2'} cursor-pointer group`}>
             <div className={`relative rounded-xl overflow-hidden ${isCompact ? 'w-40 min-w-[168px] aspect-video flex-shrink-0' : 'aspect-video w-full'}`}>
                 <img
